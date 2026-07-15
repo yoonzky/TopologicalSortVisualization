@@ -1,6 +1,7 @@
 package toposort.io;
 
 import toposort.model.Graph;
+import toposort.model.TopoSort;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /*
- * Чтение графа из текстового файла.
+ * Чтение графа из текстового файла и запись результата сортировки в файл.
  * Ошибка формата - GraphFormatException с номером строки.
  */
 public final class GraphIO {
@@ -59,6 +60,23 @@ public final class GraphIO {
         if (g.vertexCount() == 0)
             throw new GraphFormatException(lines.size(), "в файле нет ни одной вершины");
         return g;
+    }
+
+    /* Записать результат сортировки в текстовый файл. */
+    public static void saveResult(Path file, Graph g, TopoSort.Result r) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Топологическая сортировка (алгоритм Кана)\n");
+        sb.append("Вершин: ").append(g.vertexCount()).append(", рёбер: ").append(g.edgeCount()).append('\n');
+        if (r.hasCycle()) {
+            sb.append("Граф содержит цикл - сортировка невозможна.\n");
+            sb.append("Успели обработать: ").append(r.order()).append('\n');
+            sb.append("Необработанные вершины: ").append(r.remaining()).append('\n');
+        } else {
+            sb.append("Топологический порядок:");
+            for (int id : r.order()) sb.append(' ').append(id);
+            sb.append('\n');
+        }
+        Files.writeString(file, sb.toString());
     }
 
     private static void require(boolean cond, int line, String msg)
