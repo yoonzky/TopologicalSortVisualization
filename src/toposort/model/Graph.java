@@ -1,12 +1,13 @@
 package toposort.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /*
  * Ориентированный граф: списки вершин и рёбер.
- * Ограничения (до 50 вершин, до 300 рёбер, без петель и повторных рёбер) проверяются при добавлении.
- * Встречные рёбра u->v и v->u допускаются.
+ * Ограничения (до 50 вершин, до 300 рёбер, без петель и повторных рёбер)
+ * проверяются при добавлении. Встречные рёбра u->v и v->u допускаются.
  */
 public class Graph {
 
@@ -41,6 +42,28 @@ public class Graph {
         return e;
     }
 
+    /* Удалить вершину вместе со всеми инцидентными рёбрами. */
+    public void removeVertex(int id) {
+        Vertex v = findVertex(id);
+        if (v == null) return;
+        vertices.remove(v);
+        // удаление во время обхода через итератор
+        Iterator<Edge> it = edges.iterator();
+        while (it.hasNext())
+            if (it.next().touches(id)) it.remove();
+    }
+
+    public void removeEdge(Edge e) {
+        edges.remove(e);
+    }
+
+    /* Наименьший свободный номер вершины. */
+    public int nextFreeId() {
+        int id = 1;
+        while (findVertex(id) != null) id++;
+        return id;
+    }
+
     public Vertex findVertex(int id) {
         for (Vertex v : vertices)
             if (v.id == id) return v;
@@ -63,7 +86,7 @@ public class Graph {
         return edges.size();
     }
 
-    /* Встроенный демонстрационный граф (кнопка "Пример"). */
+    /* Встроенный демонстрационный граф. */
     public static Graph demo() {
         Graph g = new Graph();
         g.addVertex(1, 100, 150);
