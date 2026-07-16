@@ -123,11 +123,31 @@ public class MainFrame extends JFrame implements GraphPanel.GraphEditListener {
         try {
             Graph g = GraphIO.load(chooser.getSelectedFile().toPath());
             loadGraph(g, chooser.getSelectedFile().getName());
+            // файл, сохранённый программой как результат, показываем сразу
+            // в завершённом виде - как будто алгоритм уже прогнали
+            if (GraphIO.isResultFile(chooser.getSelectedFile().toPath()))
+                showFinished();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     "Не удалось загрузить граф:\n" + ex.getMessage(),
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    /* Прокрутить алгоритм до конца и показать итог (для файлов результата). */
+    private void showFinished() {
+        canvas.setEditable(false);
+        String msg = "";
+        while (!stepper.isFinished()) msg = stepper.stepForward();
+        log.append("Файл распознан как сохранённый результат - показано"
+                + " завершённое выполнение алгоритма.\n" + msg + "\n"
+                + "\"Шаг назад\" - разобрать выполнение по шагам, \"Сброс\" -"
+                + " начать заново.\n");
+        scrollLog();
+        status(msg);
+        refreshState();
+        canvas.repaint();
+        updateButtons();
     }
 
     private void clearGraph() {
